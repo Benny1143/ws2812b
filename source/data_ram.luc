@@ -13,8 +13,8 @@ module data_ram #(
     output ready,
     output debug_address_pointer[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
     output debug_data[3],
-    output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
-    output out_holder[COLUMN_DIMENSION * ROW_DIMENSION*2]
+    output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1]
+    //output out_holder[COLUMN_DIMENSION * ROW_DIMENSION*2]
   ) {
   
   const DEPTH =  COLUMN_DIMENSION * ROW_DIMENSION;
@@ -26,14 +26,10 @@ module data_ram #(
     };
   dff writer_pointer[$clog2(DEPTH)](#INIT(0),.clk(clk), .rst(rst));
   dff counter[$clog2(DEPTH)+1](#INIT(0),.clk(clk), .rst(rst));
-  //dff scoreA[$clog2(DEPTH)](#INIT(0),.clk(clk), .rst(rst));
-  //dff scoreB[$clog2(DEPTH)](#INIT(0),.clk(clk), .rst(rst));
   
   dff update_flag(#INIT(0), .clk(clk), .rst(rst));
-  dff holder[DEPTH*2](#INIT(0),.clk(clk), .rst(rst)); //128 dff
-  
-  sig temp[$clog2(DEPTH)+1]; //6+1 = 7 bit length
-  sig path[2];
+  dff holder[COLUMN_DIMENSION][ROW_DIMENSION][2](.clk(clk), .rst(rst));
+
   
   const BACKGROUND_COLOR = b00;
   const PLAYER_COLOR = b01;
@@ -41,9 +37,6 @@ module data_ram #(
   simple_dual_ram ram(.rclk(clk), .wclk(clk), #DEPTH(DEPTH), #SIZE($clog2(ENCODING_AMOUNT)));
   
   always {
-    temp = writer_pointer.q << 1;
-    path = ((holder.q&(b11 << temp)) >> temp);
-    
     ram.raddr = 0;
     ram.waddr = 0;
     ram.write_data = 0;
@@ -99,8 +92,8 @@ module data_ram #(
         ram.write_en = b1;
         ram.waddr = writer_pointer.q;
 
-        if(path == b00) {
-          holder.d = holder.q + (b01 << temp);
+        if(holder.q[player_x_pos][player_y_pos] == b00) {
+          holder.d[player_x_pos][player_y_pos] = b01;
           counter.d = counter.q + 1;
         }
         
@@ -121,6 +114,5 @@ module data_ram #(
     }
     
     out_counter = counter.q;
-    out_holder = holder.q;
   }
 }

@@ -21,7 +21,10 @@ module au_top (
   const ENCODING_AMOUNT = 4; // how many different encodings are used? As example, we use 4 colors, hence ENCODING_AMOUNT is 4
   
   // OFF WHITE (11), DIM BLUE (10), DIM RED (01), OFF(00)
-  const LEDCOLOR = {24h0F0F0F, 24h030000, 24h000300, 24h000000}; 
+  const LEDCOLOR = {24h0F0F0F, 24h010000, 24h000100, 24h000000}; 
+
+  // // WHITE (11), BLUE (10), RED (01), GREEN (00)
+  // const LEDCOLOR = {24hFFFFFF, 24hFF0000, 24h00FF00, 24h0000FF}; 
   
   sig rst; // reset signal
 
@@ -184,6 +187,6 @@ module au_top (
     io_led[2][7] = update_ram_flag.q;
     led[7:5] = ram.debug_data;
     
-    seg.values = {ram.out_holder[15:12], ram.out_holder[11:8], ram.out_holder[7:4], ram.out_holder[3:0]};
+    //seg.values = {ram.out_holder[15:12], ram.out_holder[11:8], ram.out_holder[7:4], ram.out_holder[3:0]};
   }
 }
