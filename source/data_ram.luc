@@ -9,7 +9,7 @@ module data_ram #(
     input player_x_pos[3],
     input player_y_pos[3],
     input address[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
-    //input playerMode,
+    input playerMode,
     input playerColor[2],
     output out_encoding[2],
     output ready,
@@ -31,6 +31,8 @@ module data_ram #(
   
   dff update_flag(#INIT(0), .clk(clk), .rst(rst));
   dff holder[COLUMN_DIMENSION][ROW_DIMENSION][2](.clk(clk), .rst(rst));
+
+  dff playerMode_holder(#INIT(0), .clk(clk), .rst(rst));
 
   
   const BACKGROUND_COLOR = b00;
@@ -63,31 +65,31 @@ module data_ram #(
         ram.write_en = b1; 
         ram.waddr = writer_pointer.q;
         // these are test dots, to know your hardware orientation
-        if (writer_pointer.q == d0){
-          ram.write_data = b11; // at RAM address 0, this will be your coordinate (0,0) write WHITE(11)
-        } else if (writer_pointer.q == d2) { // Player 2 start at (0,2)
-          ram.write_data = PLAYER2_COLOR; 
-        } else if (writer_pointer.q == d7){
-          ram.write_data = b01;
-        } else if (&writer_pointer.q){
-          ram.write_data = b11; // Top right
+        // if (writer_pointer.q == d0){
+        //   ram.write_data = PLAYER2_COLOR; // at RAM address 0, this will be your coordinate (0,0) write WHITE(11)
+        // } else 
+        if (&writer_pointer.q){
+          ram.write_data = PLAYER2_COLOR; // Top right
         } else {
           ram.write_data = BACKGROUND_COLOR; 
         }
         writer_pointer.d = writer_pointer.q + 1; 
         if (&writer_pointer.q){ // Unitl all 111111 exit
-          // advanced to write 
           writer.d = writer.WRITE;
-          // set writer pointer to player position 
-          writer_pointer.d = player_y_pos*8 + player_x_pos; // 001001 if user at (1,1)
+          writer_pointer.d = player_y_pos*8 + player_x_pos;
         }
         debug_data = b01;
         
-      writer.ERASE: 
-        ram.write_en = b1; 
-        ram.waddr = writer_pointer.q; // this is old player address
+      writer.ERASE:
+        if(playerMode_holder.q == playerMode) {
+          ram.write_en = b1; 
+          ram.waddr = writer_pointer.q; // this is old player address
+          ram.write_data = BACKGROUND_COLOR; // set back to background color
+        } else {
+          playerMode_holder.d = playerMode;
+        }
+
         writer_pointer.d = player_y_pos*8 + player_x_pos; // update player position  
-        ram.write_data = BACKGROUND_COLOR; // set back to background color 
         writer.d = writer.WRITE;
      
       writer.WRITE:

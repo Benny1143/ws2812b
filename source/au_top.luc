@@ -41,8 +41,8 @@ module au_top (
   dff player1_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
   dff player1_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
 
-  dff player2_x_pos[3](.clk(clk), #INIT(010), .rst(rst));
-  dff player2_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player2_x_pos[3](.clk(clk), #INIT(111), .rst(rst));
+  dff player2_y_pos[3](.clk(clk), #INIT(111), .rst(rst));
 
   dff update_ram_flag(.clk(clk), #INIT(0), .rst(rst));
 
@@ -91,7 +91,7 @@ module au_top (
     start_button.in = io_button[1]; // use this button to enable reverse
     start_button_edge.in = start_button.out;
 
-    //ram.playerMode = playerMode.q;
+    ram.playerMode = playerMode.q;
 
     if(playerMode.q == b0) {
       ram.playerColor = PLAYER1_COLOR;
