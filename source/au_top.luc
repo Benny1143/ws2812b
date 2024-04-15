@@ -36,9 +36,15 @@ module au_top (
   // right ---> x --
   // left ---> x++ 
   // down ---> y++ 
-  dff player_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
-  dff player_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player1_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player1_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
+
+  dff player2_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player2_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
+
   dff update_ram_flag(.clk(clk), #INIT(0), .rst(rst));
+
+  dff playerMode(.clk(clk), #INIT(1), .rst(rst)); // 0 - player 1, 1 - player 2
   
   ws2812b_writer led_strip(#PIXEL_COUNT(PIXEL_COUNT), .clk(clk), .rst(rst)); 
   fsm state(.clk(clk), .rst(rst)) = {IDLE, UPDATE_RAM, REFRESH};
@@ -82,37 +88,63 @@ module au_top (
     
     start_button.in = io_button[1]; // use this button to enable reverse
     start_button_edge.in = start_button.out;
+
+
     
     // the sample matrix we use has top RIGHT as 0,0
     // check player movement update 
     // we assume a player is a 2x2 square, the coordinate stored in player_x_pos and player_y_pos indicate top right dot 
-    if (movement_button_edge.out[0]){
-      // clamp at 0
-      if (|player_y_pos.q){
-         player_y_pos.d = player_y_pos.q - 1; // up (because up decreases y coordinate in the RAM)
+    if (movement_button_edge.out[0]){ // up
+      if(playerMode.q == b0) { //Player 1
+        if (|player1_y_pos.q){
+         player1_y_pos.d = player1_y_pos.q - 1;
+        }
+      } else if(playerMode.q == b1){ //Player 2
+        if (|player2_y_pos.q){
+         player2_y_pos.d = player2_y_pos.q - 1;
+        }
       }
     }
     
-    if (movement_button_edge.out[1]){
-      // clamp 
-      if (player_y_pos.q < COLUMN_DIMENSION-1){
-      player_y_pos.d = player_y_pos.q + 1; // down (because down increases y coordinate in the RAM
+    if (movement_button_edge.out[1]){ // down
+      if(playerMode.q == b0) { //Player 1
+        if (player1_y_pos.q < COLUMN_DIMENSION-1){
+          player1_y_pos.d = player1_y_pos.q + 1;
+        }
+      } else if(playerMode.q == b1){ //Player 2
+        if (player2_y_pos.q < COLUMN_DIMENSION-1){
+          player2_y_pos.d = player2_y_pos.q + 1;
+        }
       }
     }
     
-    if (movement_button_edge.out[2]){ // io_button[3]
-      // clamp 
-      if (player_x_pos.q < COLUMN_DIMENSION-1){
-        player_x_pos.d = player_x_pos.q + 1; // left (check the orientation of your own matrix)
-      }
-    }
-    if (movement_button_edge.out[3]){ // io_button[4]
-      // clamp at 0 
-      if (|player_x_pos.q){
-        player_x_pos.d = player_x_pos.q - 1; // right (check the orientation of your own matrix)
+    if (movement_button_edge.out[2]){ // left
+      if(playerMode.q == b0) { //Player 1
+        if (player1_x_pos.q < COLUMN_DIMENSION-1){
+          player1_x_pos.d = player1_x_pos.q + 1;
+        }
+      } else if(playerMode.q == b1){ //Player 2
+        if (player2_x_pos.q < COLUMN_DIMENSION-1){
+          player2_x_pos.d = player2_x_pos.q + 1;
+        }
       }
     }
 
+    if (movement_button_edge.out[3]){ // right
+      if(playerMode.q == b0) { //Player 1
+        if (|player1_x_pos.q){
+          player1_x_pos.d = player1_x_pos.q - 1;
+        }
+      } else if(playerMode.q == b1){ //Player 2
+        if (|player2_x_pos.q){
+          player2_x_pos.d = player2_x_pos.q - 1;
+        }
+      }
+    }
+
+    if(start_button_edge.out) {
+      playerMode.d = playerMode.q + 1;
+    }
     
     // update the flag 
     if (|movement_button_edge.out | start_button_edge.out){
@@ -120,8 +152,8 @@ module au_top (
     }
     
     // connect player location to RAM, set update as 0 initially
-    ram.player_x_pos = player_x_pos.q; 
-    ram.player_y_pos = player_y_pos.q;
+    ram.player_x_pos = player1_x_pos.q; 
+    ram.player_y_pos = player1_y_pos.q;
     ram.update = 0; 
     
     led_strip.update = 0; // do not refresh by default
@@ -136,31 +168,29 @@ module au_top (
     // use io_dip[2:0]  to encode 12 unique pixel values at most (24 bits)
     case (state.q){
       state.UPDATE_RAM:
-             // when ram is ready, and led is idling at RESET state, we load the strip
-             if (ram.ready & led_strip.reset){
-                // clear flag 
-                update_ram_flag.d = 0;
-                state.d = state.REFRESH;
-                ram.address = index_reverser.effective_pixel_address;
-                led_strip.update = 1;
-              }
-        
+        // when ram is ready, and led is idling at RESET state, we load the strip
+        if (ram.ready & led_strip.reset){
+          // clear flag 
+          update_ram_flag.d = 0;
+          state.d = state.REFRESH;
+          ram.address = index_reverser.effective_pixel_address;
+          led_strip.update = 1;
+        }
         led[1:0] = b10;
-      
       state.REFRESH:
-            // if at the last FPGA clock cycle for this bit, advance the address first because our RAM needs 1 additional clock cycle to work
-            if (led_strip.next_pixel){
-              index_reverser.original_pixel_address = led_strip.pixel_address + 1;
-            }
-      
-            // pass this to ram 
-            ram.address = index_reverser.effective_pixel_address;
-            
-            // wait until we are all done in updating our LED;
-            if (led_strip.done){
-                state.d = state.IDLE;
-            }
-            led[1:0] = b11;
+        // if at the last FPGA clock cycle for this bit, advance the address first because our RAM needs 1 additional clock cycle to work
+        if (led_strip.next_pixel){
+          index_reverser.original_pixel_address = led_strip.pixel_address + 1;
+        }
+
+        // pass this to ram 
+        ram.address = index_reverser.effective_pixel_address;
+        
+        // wait until we are all done in updating our LED;
+        if (led_strip.done){
+            state.d = state.IDLE;
+        }
+        led[1:0] = b11;
         
      state.IDLE:
         if (update_ram_flag.q){ // if there's movement update or start button pressed
@@ -171,14 +201,13 @@ module au_top (
 
         // test reverser 
         index_reverser.original_pixel_address = ram.debug_address_pointer;
-        
     }
     
     led_strip.color = LEDCOLOR[ram.out_encoding]; 
     outled = led_strip.led;
     
     // debug 
-    io_led[0] = c{player_y_pos.q, player_x_pos.q};
+    io_led[0] = c{player1_y_pos.q, player1_x_pos.q};
    
     //io_led[2] = ram.debug_address_pointer;
     io_led[2] = ram.out_counter;
@@ -187,6 +216,6 @@ module au_top (
     io_led[2][7] = update_ram_flag.q;
     led[7:5] = ram.debug_data;
     
-    //seg.values = {ram.out_holder[15:12], ram.out_holder[11:8], ram.out_holder[7:4], ram.out_holder[3:0]};
+    seg.values = {4hF, 4hF, 4hF, c{3x{0}, playerMode.q}};
   }
 }
