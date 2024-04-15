@@ -75,7 +75,7 @@ module data_ram #(
         // if (writer_pointer.q == d0){
         //   ram.write_data = PLAYER2_COLOR; // at RAM address 0, this will be your coordinate (0,0) write WHITE(11)
         // } else 
-        ram.write_data = BACKGROUND_COLOR; 
+        ram.write_data = b11; 
         writer_pointer.d = writer_pointer.q + 1; 
         if (&writer_pointer.q){ // Unitl all 111111 exit
           ram.write_data = PLAYER2_COLOR; // Top right

@@ -20,8 +20,8 @@ module au_top (
   const PIXEL_COUNT = COLUMN_DIMENSION *  ROW_DIMENSION;   
   const ENCODING_AMOUNT = 4; // how many different encodings are used? As example, we use 4 colors, hence ENCODING_AMOUNT is 4
   
-  // OFF WHITE (11), DIM BLUE (10), DIM RED (01), OFF(00)
-  const LEDCOLOR = {24h0F0F0F, 24h010000, 24h000100, 24h000000};
+  // GREEN (11), BLUE (10), RED (01), OFF(00)
+  const LEDCOLOR = {24h000001, 24h010000, 24h000100, 24h000000};
   const PLAYER1_COLOR = b01;
   const PLAYER2_COLOR = b10;
 
