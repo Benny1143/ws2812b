@@ -59,7 +59,9 @@ module au_top (
   button_conditioner start_button(.clk(clk));
   edge_detector start_button_edge(.clk(clk), #RISE(1), #FALL(0));
   
-  digit_to_seven_seg convert(.clk(clk),.rst(rst));
+  digit_to_seven_seg convert1(.clk(clk),.rst(rst));
+  digit_to_seven_seg convert2(.clk(clk),.rst(rst));
+ 
   multi_seven_seg seg(.clk(clk),.rst(rst)); 
   
   .clk(clk) {
@@ -227,8 +229,11 @@ module au_top (
     io_led[2][7] = update_ram_flag.q;
     led[7:5] = ram.debug_data;
 
-    convert.update = ram.update_display;
-    convert.digit = ram.out_counter;
-    seg.values = {8hF, 8hF, convert.out[1],convert.out[0]};
+    convert1.update = ram.update_display;
+    convert2.update = ram.update_display;
+    convert1.digit = ram.out_player1_score;
+    convert2.digit = ram.out_player2_score;
+
+    seg.values = {convert1.out[1],convert1.out[0], convert2.out[1],convert2.out[0]};
   }
 }

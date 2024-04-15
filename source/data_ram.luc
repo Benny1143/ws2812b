@@ -16,6 +16,8 @@ module data_ram #(
     output debug_address_pointer[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
     output debug_data[3],
     output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
+    output out_player1_score[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
+    output out_player2_score[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
     output update_display
     //output out_holder[COLUMN_DIMENSION * ROW_DIMENSION*2]
   ) {
@@ -25,10 +27,14 @@ module data_ram #(
     INIT, 
     WRITE,
     ERASE,
+    UPDATE_SEG,
     IDLE
     };
   dff writer_pointer[$clog2(DEPTH)](#INIT(0),.clk(clk), .rst(rst));
   dff counter[$clog2(DEPTH)+1](#INIT(0),.clk(clk), .rst(rst));
+
+  dff player1_score[$clog2(DEPTH)+1](#INIT(0),.clk(clk), .rst(rst));
+  dff player2_score[$clog2(DEPTH)+1](#INIT(0),.clk(clk), .rst(rst));
   
   dff update_flag(#INIT(0), .clk(clk), .rst(rst));
   dff holder[COLUMN_DIMENSION][ROW_DIMENSION][2](.clk(clk), .rst(rst));
@@ -93,15 +99,24 @@ module data_ram #(
       writer.WRITE:
         ram.write_en = b1;
         ram.waddr = writer_pointer.q;
+        ram.write_data = playerColor;
 
         if(holder.q[player_x_pos][player_y_pos] == b00) {
           holder.d[player_x_pos][player_y_pos] = b01;
           counter.d = counter.q + 1;
-          update_display = 1;
+          if(playerMode) {
+            player1_score.d = player1_score.q + 1;
+          } else {
+            player2_score.d = player2_score.q + 1;
+          }
+          writer.d = writer.UPDATE_SEG;
+        } else {
+          writer.d = writer.IDLE;
         }
         
-        ram.write_data = playerColor;
-        writer.d = writer.IDLE; 
+      writer.UPDATE_SEG:
+        update_display = 1;
+        writer.d = writer.IDLE;
         
       writer.IDLE:
         ram.raddr = address;
@@ -116,5 +131,7 @@ module data_ram #(
     }
     
     out_counter = counter.q;
+    out_player1_score = player1_score.q;
+    out_player2_score = player2_score.q;
   }
 }
