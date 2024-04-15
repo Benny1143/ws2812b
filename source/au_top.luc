@@ -21,7 +21,9 @@ module au_top (
   const ENCODING_AMOUNT = 4; // how many different encodings are used? As example, we use 4 colors, hence ENCODING_AMOUNT is 4
   
   // OFF WHITE (11), DIM BLUE (10), DIM RED (01), OFF(00)
-  const LEDCOLOR = {24h0F0F0F, 24h010000, 24h000100, 24h000000}; 
+  const LEDCOLOR = {24h0F0F0F, 24h010000, 24h000100, 24h000000};
+  const PLAYER1_COLOR = b01;
+  const PLAYER2_COLOR = b10;
 
   // // WHITE (11), BLUE (10), RED (01), GREEN (00)
   // const LEDCOLOR = {24hFFFFFF, 24hFF0000, 24h00FF00, 24h0000FF}; 
@@ -39,7 +41,7 @@ module au_top (
   dff player1_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
   dff player1_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
 
-  dff player2_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player2_x_pos[3](.clk(clk), #INIT(010), .rst(rst));
   dff player2_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
 
   dff update_ram_flag(.clk(clk), #INIT(0), .rst(rst));
@@ -89,7 +91,17 @@ module au_top (
     start_button.in = io_button[1]; // use this button to enable reverse
     start_button_edge.in = start_button.out;
 
+    //ram.playerMode = playerMode.q;
 
+    if(playerMode.q == b0) {
+      ram.playerColor = PLAYER1_COLOR;
+      ram.player_x_pos = player1_x_pos.q; 
+      ram.player_y_pos = player1_y_pos.q;
+    } else {
+      ram.playerColor = PLAYER2_COLOR;
+      ram.player_x_pos = player2_x_pos.q; 
+      ram.player_y_pos = player2_y_pos.q;
+    }
     
     // the sample matrix we use has top RIGHT as 0,0
     // check player movement update 
@@ -152,8 +164,6 @@ module au_top (
     }
     
     // connect player location to RAM, set update as 0 initially
-    ram.player_x_pos = player1_x_pos.q; 
-    ram.player_y_pos = player1_y_pos.q;
     ram.update = 0; 
     
     led_strip.update = 0; // do not refresh by default

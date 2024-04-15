@@ -9,6 +9,8 @@ module data_ram #(
     input player_x_pos[3],
     input player_y_pos[3],
     input address[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
+    //input playerMode,
+    input playerColor[2],
     output out_encoding[2],
     output ready,
     output debug_address_pointer[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
@@ -32,7 +34,8 @@ module data_ram #(
 
   
   const BACKGROUND_COLOR = b00;
-  const PLAYER_COLOR = b01;
+  //const PLAYER1_COLOR = b01;
+  const PLAYER2_COLOR = b10;
   
   simple_dual_ram ram(.rclk(clk), .wclk(clk), #DEPTH(DEPTH), #SIZE($clog2(ENCODING_AMOUNT)));
   
@@ -58,18 +61,17 @@ module data_ram #(
       writer.INIT: 
         // set all values to zero 
         ram.write_en = b1; 
-        ram.waddr = writer_pointer.q; 
+        ram.waddr = writer_pointer.q;
         // these are test dots, to know your hardware orientation
         if (writer_pointer.q == d0){
-          ram.write_data = b11; // white at RAM address 0, this will be your coordinate (0,0) write WHITE(11)
-        }
-        else if (writer_pointer.q == d7){
-          ram.write_data = b10; // test blue at RAM address 7
-        }
-        else if (&writer_pointer.q){
-          ram.write_data = b01;  // test red at RAM biggest RAM address (7,7) write RED(01)
-        }
-        else{
+          ram.write_data = b11; // at RAM address 0, this will be your coordinate (0,0) write WHITE(11)
+        } else if (writer_pointer.q == d2) { // Player 2 start at (0,2)
+          ram.write_data = PLAYER2_COLOR; 
+        } else if (writer_pointer.q == d7){
+          ram.write_data = b01;
+        } else if (&writer_pointer.q){
+          ram.write_data = b11; // Top right
+        } else {
           ram.write_data = BACKGROUND_COLOR; 
         }
         writer_pointer.d = writer_pointer.q + 1; 
@@ -97,8 +99,7 @@ module data_ram #(
           counter.d = counter.q + 1;
         }
         
-        
-        ram.write_data = PLAYER_COLOR; // write player position (red)_     
+        ram.write_data = playerColor;
         writer.d = writer.IDLE; 
         
       writer.IDLE:
