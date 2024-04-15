@@ -1,0 +1,20 @@
+module multi_seven_seg_translate  #(
+    DIGITS = 4 : DIGITS > 0,
+    DIV = 16 : DIV >= 0
+  )(
+    input clk,                // clock
+    input rst,                // reset
+    input values [DIGITS][4], // values to show
+    output seg [7],           // LED segments
+    output sel [DIGITS]       // Digit select
+  ) {
+  multi_seven_seg segment(.clk(clk),.rst(rst));
+  always {
+    segment.values[0] = values[0];
+    segment.values[1] = values[1];
+    segment.values[2] = values[2];
+    segment.values[3] = values[3];
+    seg = segment.seg;
+    sel = segment.sel;
+  }
+}

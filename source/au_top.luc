@@ -33,8 +33,8 @@ module au_top (
   // right ---> x --
   // left ---> x++ 
   // down ---> y++ 
-  dff player_x_pos[3](.clk(clk), #INIT(010), .rst(rst));
-  dff player_y_pos[3](.clk(clk), #INIT(001), .rst(rst));
+  dff player_x_pos[3](.clk(clk), #INIT(000), .rst(rst));
+  dff player_y_pos[3](.clk(clk), #INIT(000), .rst(rst));
   dff update_ram_flag(.clk(clk), #INIT(0), .rst(rst));
   
   ws2812b_writer led_strip(#PIXEL_COUNT(PIXEL_COUNT), .clk(clk), .rst(rst)); 
@@ -47,7 +47,8 @@ module au_top (
   edge_detector movement_button_edge[4](.clk(clk), #RISE(1), #FALL(0));
   button_conditioner start_button(.clk(clk));
   edge_detector start_button_edge(.clk(clk), #RISE(1), #FALL(0));
- 
+  
+  multi_seven_seg_translate seg(.clk(clk),.rst(rst)); 
   
   .clk(clk) {
     // The reset conditioner is used to synchronize the reset signal to the FPGA
@@ -68,6 +69,10 @@ module au_top (
     io_sel = 4hf;           // select no digits
     
     ram.address = 0;        // address 0 selected by default
+
+    seg.values = {4b0,4b0,4b0,4b0};
+    io_seg = ~seg.seg;
+    io_sel = ~seg.sel;
     
     movement_button.in = c{io_button[4], io_button[3], io_button[2], io_button[0]}; // up, down, left, right
     movement_button_edge.in = movement_button.out;
@@ -87,14 +92,14 @@ module au_top (
     
     if (movement_button_edge.out[1]){
       // clamp 
-      if (player_y_pos.q < COLUMN_DIMENSION-2){
+      if (player_y_pos.q < COLUMN_DIMENSION-1){
       player_y_pos.d = player_y_pos.q + 1; // down (because down increases y coordinate in the RAM
       }
     }
     
     if (movement_button_edge.out[2]){ // io_button[3]
       // clamp 
-      if (player_x_pos.q < COLUMN_DIMENSION-2){
+      if (player_x_pos.q < COLUMN_DIMENSION-1){
         player_x_pos.d = player_x_pos.q + 1; // left (check the orientation of your own matrix)
       }
     }
@@ -172,11 +177,13 @@ module au_top (
     // debug 
     io_led[0] = c{player_y_pos.q, player_x_pos.q};
    
-    io_led[2] = ram.debug_address_pointer;
+    //io_led[2] = ram.debug_address_pointer;
+    io_led[2] = ram.out_counter;
     io_led[1] = index_reverser.effective_pixel_address;
    
     io_led[2][7] = update_ram_flag.q;
     led[7:5] = ram.debug_data;
     
+    seg.values = {ram.out_holder[15:12], ram.out_holder[11:8], ram.out_holder[7:4], ram.out_holder[3:0]};
   }
 }

@@ -1,0 +1,63 @@
+module seven_seg (
+    input char[8],
+    output segs[7]
+  ) {
+
+  always {
+    case (char) {
+      8h0: segs = 7b0111111;
+      8h1: segs = 7b0000110;
+      8h2: segs = 7b1011011;
+      8h3: segs = 7b1001111;
+      8h4: segs = 7b1100110;
+      8h5: segs = 7b1101101;
+      8h6: segs = 7b1111101;
+      8h7: segs = 7b0000111;
+      8h8: segs = 7b1111111;
+      8h9: segs = 7b1100111;
+      8hA: segs = 7b1110111;
+      8hB: segs = 7b1111100;
+      8hC: segs = 7b0111001;
+      8hD: segs = 7b1011110;
+      8hE: segs = 7b1111001;
+      8hF: segs = 7b1110001;
+      "0": segs = 7b0111111;
+      "1": segs = 7b0000110;
+      "2": segs = 7b1011011;
+      "3": segs = 7b1001111;
+      "4": segs = 7b1100110;
+      "5": segs = 7b1101101;
+      "6": segs = 7b1111101;
+      "7": segs = 7b0000111;
+      "8": segs = 7b1111111;
+      "9": segs = 7b1100111;
+      "A": segs = 7b1110111;
+      "B": segs = 7b1111100;
+      "C": segs = 7b0111001;
+      "D": segs = 7b1011110;
+      "E": segs = 7b1111001;
+      "F": segs = 7b1110001;
+      "G": segs = 7b1011101;
+      "H": segs = 7b1110110;
+      "I": segs = 7b0000100;
+      "J": segs = 7b1001110;
+      //"K": segs = 7b1111111; Can't be represented
+      "L": segs = 7b0111000;
+      //"M": segs = 7b1111111;
+      "N": segs = 7b0110111;
+      "O": segs = 7b1011100;
+      "P": segs = 7b1110011;
+      "Q": segs = 7b1100111;
+      "R": segs = 7b1010000;
+      "S": segs = 7b1101101;
+      "T": segs = 7b1111000;
+      "U": segs = 7b0111110;
+      //"V": segs = 7b1011101;
+      //"W": segs = 7b1011101;
+      //"X": segs = 7b1011101;
+      "Y": segs = 7b1101110;
+      //"Z": segs = 7b1011101; 
+      default: segs = 7b0000000;
+    }
+  }
+}
