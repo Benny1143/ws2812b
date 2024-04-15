@@ -39,6 +39,7 @@ module data_ram #(
   dff player2_score[$clog2(DEPTH)+1](#INIT(0),.clk(clk), .rst(rst));
   
   dff update_flag(#INIT(0), .clk(clk), .rst(rst));
+  dff killed_user_flag(#INIT(0), .clk(clk), .rst(rst));
   dff holder[COLUMN_DIMENSION][ROW_DIMENSION][2](.clk(clk), .rst(rst));
 
   dff playerMode_holder(#INIT(0), .clk(clk), .rst(rst));
@@ -120,8 +121,11 @@ module data_ram #(
           }
           writer.d = writer.UPDATE_SEG;
         } else if(holder.q[player_x_pos][player_y_pos] == b11) { // Step on bomb
+          if(killed_user_flag.q){
+            killed_user_flag.d = 1;
+            counter.d = counter.q + 1;
+          }
           ram.write_data = BOMB_COLOR;
-          // Kill user
           out_kill_user = c{playerMode_holder.q, b1};
         }
         
@@ -135,9 +139,9 @@ module data_ram #(
           writer.d = writer.INIT_BOMB;
         } else {
           holder.d[random_generator.q[2:0]][random_generator.q[5:3]] = b11; // Bomb
-          ram.write_en = b1;
-          ram.waddr = random_generator.q;
-          ram.write_data = BOMB_COLOR; //TODOs: To be hidden
+          //ram.write_en = b1;
+          //ram.waddr = random_generator.q;
+          //ram.write_data = BOMB_COLOR;
         }
         
       writer.IDLE:
