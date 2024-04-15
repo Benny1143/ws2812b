@@ -18,10 +18,10 @@ module au_top (
   const ROW_DIMENSION = 8; // how many "rows"?
 
   const PIXEL_COUNT = COLUMN_DIMENSION *  ROW_DIMENSION;   
-  const ENCODING_AMOUNT = 4; // how many different encodings are used? As example, we use 4 colors, hence ENCODING_AMOUNT is 4
+  const ENCODING_AMOUNT = 8; // how many different encodings are used? As example, we use 4 colors, hence ENCODING_AMOUNT is 4
   
-  // GREEN (11), BLUE (10), RED (01), OFF(00)
-  const LEDCOLOR = {24h000001, 24h010000, 24h000100, 24h000000};
+  // YELLOW (101) PURPLE (100) GREEN (011), BLUE (010), RED (001), OFF(000)
+  const LEDCOLOR = {24h000000, 24h000000, 24h000101, 24h010100, 24h000001, 24h010000, 24h000100, 24h000000};
   const PLAYER1_COLOR = b01;
   const PLAYER2_COLOR = b10;
 

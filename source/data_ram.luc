@@ -1,7 +1,7 @@
 module data_ram #(
-    ROW_DIMENSION = 4 : ROW_DIMENSION > 0,
-    COLUMN_DIMENSION = 4 : COLUMN_DIMENSION > 0,
-    ENCODING_AMOUNT = 4 : ENCODING_AMOUNT > 0
+    ROW_DIMENSION = 8 : ROW_DIMENSION > 0,
+    COLUMN_DIMENSION = 8 : COLUMN_DIMENSION > 0,
+    ENCODING_AMOUNT = 8 : ENCODING_AMOUNT > 0
     )(
     input clk,  // clock
     input rst,  // reset
@@ -10,8 +10,8 @@ module data_ram #(
     input player_y_pos[3],
     input address[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
     input playerMode,
-    input playerColor[2],
-    output out_encoding[2],
+    input playerColor[$clog2(ENCODING_AMOUNT)],
+    output out_encoding[$clog2(ENCODING_AMOUNT)],
     output ready,
     output debug_address_pointer[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
     output debug_data[3],
@@ -28,6 +28,7 @@ module data_ram #(
     WRITE,
     ERASE,
     UPDATE_SEG,
+    INIT_BOMB,
     IDLE
     };
   dff writer_pointer[$clog2(DEPTH)](#INIT(0),.clk(clk), .rst(rst));
@@ -41,10 +42,13 @@ module data_ram #(
 
   dff playerMode_holder(#INIT(0), .clk(clk), .rst(rst));
 
+  dff random_generator[$clog2(DEPTH)](#INIT(0), .clk(clk), .rst(rst));
+  dff bomb_set(#INIT(0), .clk(clk), .rst(rst));
   
   const BACKGROUND_COLOR = b00;
   //const PLAYER1_COLOR = b01;
   const PLAYER2_COLOR = b10;
+  const BOMB_COLOR = b100;
   
   simple_dual_ram ram(.rclk(clk), .wclk(clk), #DEPTH(DEPTH), #SIZE($clog2(ENCODING_AMOUNT)));
   
@@ -57,6 +61,8 @@ module data_ram #(
 
     out_encoding = 0;
     debug_data = 0;
+
+    random_generator.d = random_generator.q + 1;
     
     ready = writer.q == writer.IDLE;
     debug_address_pointer = writer_pointer.q;
@@ -67,7 +73,7 @@ module data_ram #(
     }
     // WHITE (11), DIM BLUE (10), DIM RED (01)
     case (writer.q){
-      writer.INIT: 
+      writer.INIT:
         // set all values to zero 
         ram.write_en = b1; 
         ram.waddr = writer_pointer.q;
@@ -100,6 +106,7 @@ module data_ram #(
         ram.write_en = b1;
         ram.waddr = writer_pointer.q;
         ram.write_data = playerColor;
+        writer.d = writer.IDLE;
 
         if(holder.q[player_x_pos][player_y_pos] == b00) {
           holder.d[player_x_pos][player_y_pos] = b01;
@@ -110,13 +117,22 @@ module data_ram #(
             player2_score.d = player2_score.q + 1;
           }
           writer.d = writer.UPDATE_SEG;
-        } else {
-          writer.d = writer.IDLE;
         }
         
       writer.UPDATE_SEG:
         update_display = 1;
         writer.d = writer.IDLE;
+      
+      writer.INIT_BOMB:
+        writer.d = writer.ERASE;
+        if(random_generator.q == 6b0 || random_generator.q == 6b111111) {
+          writer.d = writer.INIT_BOMB;
+        } else {
+          holder.d[random_generator.q[5:3]][random_generator.q[2:0]] = b11; // Bomb
+          ram.write_en = b1;
+          ram.waddr = random_generator.q;
+          ram.write_data = BOMB_COLOR;
+        }
         
       writer.IDLE:
         ram.raddr = address;
@@ -124,8 +140,12 @@ module data_ram #(
         debug_data = 0; // for debugging
         writer.d = writer.IDLE; // remain in state
         if (update_flag.q){
-            update_flag.d = 0;
-            writer.d = writer.ERASE;
+          update_flag.d = 0;
+          writer.d = writer.ERASE;
+          if(bomb_set.q == 0) { //Generate Bomb
+            writer.d = writer.INIT_BOMB;
+            bomb_set.d = 1;
+          }
         }
         debug_data = c{b11, update_flag.q};
     }
