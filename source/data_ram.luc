@@ -15,7 +15,8 @@ module data_ram #(
     output ready,
     output debug_address_pointer[$clog2(ROW_DIMENSION*COLUMN_DIMENSION)],
     output debug_data[3],
-    output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1]
+    output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
+    output update_display
     //output out_holder[COLUMN_DIMENSION * ROW_DIMENSION*2]
   ) {
   
@@ -42,11 +43,11 @@ module data_ram #(
   simple_dual_ram ram(.rclk(clk), .wclk(clk), #DEPTH(DEPTH), #SIZE($clog2(ENCODING_AMOUNT)));
   
   always {
+    update_display = 0;
     ram.raddr = 0;
     ram.waddr = 0;
     ram.write_data = 0;
     ram.write_en = 0;
-    
 
     out_encoding = 0;
     debug_data = 0;
@@ -96,6 +97,7 @@ module data_ram #(
         if(holder.q[player_x_pos][player_y_pos] == b00) {
           holder.d[player_x_pos][player_y_pos] = b01;
           counter.d = counter.q + 1;
+          update_display = 1;
         }
         
         ram.write_data = playerColor;

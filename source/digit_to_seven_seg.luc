@@ -1,0 +1,30 @@
+module digit_to_seven_seg (
+    input clk,  // clock
+    input rst,  // reset
+    input digit[8],
+    input update,
+    output out[2][8]
+  ) {
+
+  dff number[8](.clk(clk), #INIT(0010000), .rst(rst));
+  dff tens[8](.clk(clk), #INIT(0000), .rst(rst));
+  dff display[2][8](#INIT({8h0,8h0}),.clk(clk), .rst(rst));
+
+  always {
+    if(update) {
+      number.d = digit;
+      tens.d = b0;
+      display.d = {8b0,8b0};
+    }
+    if(number.q < 99) {
+      if(number.q > 9) {
+        tens.d = tens.q + d1;
+        number.d = number.q - d10;
+      } else {
+        display.d[0] = number.q;
+        display.d[1] = tens.q;
+      }
+    }
+    out = display.q;
+  }
+}

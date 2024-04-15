@@ -8,6 +8,7 @@
     <src>data_rom.luc</src>
     <component>decoder.luc</component>
     <src>ws2812b_writer.luc</src>
+    <src>digit_to_seven_seg.luc</src>
     <src>reverser.luc</src>
     <src>data_ram.luc</src>
     <component>reset_conditioner.luc</component>
