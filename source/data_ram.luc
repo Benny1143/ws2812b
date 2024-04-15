@@ -18,7 +18,8 @@ module data_ram #(
     output out_counter[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
     output out_player1_score[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
     output out_player2_score[$clog2(COLUMN_DIMENSION * ROW_DIMENSION)+1],
-    output update_display
+    output update_display,
+    output out_kill_user[2]
     //output out_holder[COLUMN_DIMENSION * ROW_DIMENSION*2]
   ) {
   
@@ -53,6 +54,7 @@ module data_ram #(
   simple_dual_ram ram(.rclk(clk), .wclk(clk), #DEPTH(DEPTH), #SIZE($clog2(ENCODING_AMOUNT)));
   
   always {
+    out_kill_user = 0;
     update_display = 0;
     ram.raddr = 0;
     ram.waddr = 0;
@@ -117,6 +119,10 @@ module data_ram #(
             player2_score.d = player2_score.q + 1;
           }
           writer.d = writer.UPDATE_SEG;
+        } else if(holder.q[player_x_pos][player_y_pos] == b11) { // Step on bomb
+          ram.write_data = BOMB_COLOR;
+          // Kill user
+          out_kill_user = c{playerMode_holder.q, b1};
         }
         
       writer.UPDATE_SEG:
@@ -128,10 +134,10 @@ module data_ram #(
         if(random_generator.q == 6b0 || random_generator.q == 6b111111) {
           writer.d = writer.INIT_BOMB;
         } else {
-          holder.d[random_generator.q[5:3]][random_generator.q[2:0]] = b11; // Bomb
+          holder.d[random_generator.q[2:0]][random_generator.q[5:3]] = b11; // Bomb
           ram.write_en = b1;
           ram.waddr = random_generator.q;
-          ram.write_data = BOMB_COLOR;
+          ram.write_data = BOMB_COLOR; //TODOs: To be hidden
         }
         
       writer.IDLE:
