@@ -52,10 +52,6 @@ module au_top (
   fsm state(.clk(clk), .rst(rst)) = {IDLE, UPDATE_RAM, REFRESH};
   
   reverser index_reverser(#COLUMN_DIMENSION(COLUMN_DIMENSION), #ROW_DIMENSION(ROW_DIMENSION));
-  
-  // user inputs 
-  button_conditioner movement_button[4](.clk(clk));
-  edge_detector movement_button_edge[4](.clk(clk), #RISE(1), #FALL(0));
 
   button_conditioner controller_left_button[4](.clk(clk));
   button_conditioner controller_right_button[4](.clk(clk));
@@ -93,9 +89,6 @@ module au_top (
     seg.values = {8b0,8b0,8b0,8b0};
     io_seg = ~seg.seg;
     io_sel = ~seg.sel;
-    
-    movement_button.in = c{io_button[4], io_button[3], io_button[2], io_button[0]}; // up, down, left, right
-    movement_button_edge.in = movement_button.out;
 
     controller_left_button.in = c{controller_left[0], controller_left[1], controller_left[3], controller_left[2]}; // up, down, left, right
     controller_right_button.in = c{controller_right[1], controller_right[3], controller_right[0], controller_right[2]}; // up, down, left, right
@@ -163,7 +156,7 @@ module au_top (
     }
 
     // update the flag 
-    if ((|movement_button_edge.out) | (|controller_left_edge.out) | (|controller_right_edge.out) | start_button_edge.out){
+    if ((|controller_left_edge.out) | (|controller_right_edge.out) | start_button_edge.out | ram.out_refresh_screen){
        update_ram_flag.d = 1;
     }
     
