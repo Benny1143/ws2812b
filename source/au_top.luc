@@ -165,7 +165,6 @@ module au_top (
     // update the flag 
     if ((|movement_button_edge.out) | (|controller_left_edge.out) | (|controller_right_edge.out) | start_button_edge.out){
        update_ram_flag.d = 1;
-       playerMode.d = |controller_right_edge.out;
     }
     
     // connect player location to RAM, set update as 0 initially
