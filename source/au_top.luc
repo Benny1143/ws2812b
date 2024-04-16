@@ -9,7 +9,8 @@ module au_top (
     output io_seg [8],      // 7-segment LEDs on IO Shield
     output io_sel [4],      // Digit select on IO Shield
     input io_button [5],    // 5 buttons on IO Shield
-    input io_dip [3][8]     // DIP switches on IO Shield
+    input controller_right[4],
+    input controller_left[4]
   ) {
   
   // We test on an 8x8 WS2812B matrix, please change as required
@@ -222,8 +223,8 @@ module au_top (
     
     // debug 
     io_led[0] = c{player1_y_pos.q, player1_x_pos.q};
-    io_led[1] = c{player2_y_pos.q, player2_x_pos.q};
-   
+    //io_led[1] = c{player2_y_pos.q, player2_x_pos.q};
+    io_led[1] = c{controller_left,controller_right};
     //io_led[2] = ram.debug_address_pointer;
     io_led[2] = ram.out_counter; //TODOs: End game when ram.out_counter[6] == 1
     //io_led[1] = index_reverser.effective_pixel_address;
