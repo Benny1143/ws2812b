@@ -3,8 +3,6 @@ clock clk 100MHz;
 
 pin rst_n RESET;
 
-pin rst_external C46;
-
 pin led[0] LED0;
 pin led[1] LED1;
 pin led[2] LED2;
@@ -17,9 +15,6 @@ pin led[7] LED7;
 // flip the Tx/Rx lines
 pin usb_rx USB_TX;
 pin usb_tx USB_RX;
-
-pin outled C3;
-
 
 pin io_led[0][0] B21;
 pin io_led[0][1] B20;
@@ -46,11 +41,11 @@ pin io_led[2][5] A14;
 pin io_led[2][6] A12;
 pin io_led[2][7] A11;
 
-pin io_button[0] B28 pulldown;
-pin io_button[1] B27 pulldown;
-pin io_button[2] B23 pulldown;
-pin io_button[3] B24 pulldown;
-pin io_button[4] C49 pulldown;
+//pin io_button[0] B28 pulldown;
+//pin io_button[1] B27 pulldown;
+//pin io_button[2] B23 pulldown;
+//pin io_button[3] B24 pulldown;
+//pin io_button[4] C49 pulldown;
 
 pin io_sel[0] A9;
 pin io_sel[1] A8;
@@ -75,3 +70,7 @@ pin controller_left[0] A27 pulldown;
 pin controller_left[1] A28 pulldown;
 pin controller_left[2] A30 pulldown;
 pin controller_left[3] A31 pulldown;
+
+pin middle_button B27 pulldown;
+pin start_button_external B30 pulldown;
+pin outled B33;

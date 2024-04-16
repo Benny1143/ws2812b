@@ -8,10 +8,11 @@ module au_top (
     output io_led [3][8],   // LEDs on IO Shield
     output io_seg [8],      // 7-segment LEDs on IO Shield
     output io_sel [4],      // Digit select on IO Shield
-    input rst_external,
-    input io_button [5],    // 5 buttons on IO Shield
+    //input io_button [5],    // 5 buttons on IO Shield
+    input start_button_external,
     input controller_right[4],
-    input controller_left[4]
+    input controller_left[4],
+    input middle_button
   ) {
   
   // We test on an 8x8 WS2812B matrix, please change as required
@@ -45,8 +46,9 @@ module au_top (
   dff player2_y_pos[3](.clk(clk), #INIT(111), .rst(rst));
 
   dff update_ram_flag(.clk(clk), #INIT(0), .rst(rst));
-
   dff user_killed[2](.clk(clk), #INIT(0), .rst(rst));
+  
+  dff start_state[2](.clk(clk), #INIT(0), .rst(rst));
   
   ws2812b_writer led_strip(#PIXEL_COUNT(PIXEL_COUNT), .clk(clk), .rst(rst)); 
   fsm state(.clk(clk), .rst(rst)) = {IDLE, UPDATE_RAM, REFRESH};
@@ -61,6 +63,9 @@ module au_top (
   button_conditioner start_button(.clk(clk));
   edge_detector start_button_edge(.clk(clk), #RISE(1), #FALL(0));
   
+  button_conditioner middle_button_cond(.clk(clk));
+  edge_detector middle_button_edge(.clk(clk), #RISE(1), #FALL(0));
+  
   digit_to_seven_seg convert1(.clk(clk),.rst(rst));
   digit_to_seven_seg convert2(.clk(clk),.rst(rst));
  
@@ -73,7 +78,7 @@ module au_top (
   }
   
   always {
-    reset_cond.in = (~rst_n) | (~rst_external); // input raw inverted reset signal
+    reset_cond.in = (~rst_n) | (start_state.q == b10); // input raw inverted reset signal
     rst = reset_cond.out;   // conditioned reset
     
     usb_tx = usb_rx;        // loop serial port
@@ -95,8 +100,15 @@ module au_top (
     controller_left_edge.in = controller_left_button.out;
     controller_right_edge.in = controller_right_button.out;
 
-    start_button.in = io_button[1]; // use this button to enable reverse
+    start_button.in = start_button_external; // use this button to enable reverse
     start_button_edge.in = start_button.out;
+    
+    if(start_button_edge.out) {
+      start_state.d = start_state.q +_1;
+    }
+    
+    middle_button_cond.in = middle_button;
+    middle_button_edge.in = middle_button_cond.out;
 
     ram.player1_x_pos = player1_x_pos.q; 
     ram.player1_y_pos = player1_y_pos.q;
@@ -156,7 +168,7 @@ module au_top (
     }
 
     // update the flag 
-    if ((|controller_left_edge.out) | (|controller_right_edge.out) | start_button_edge.out | ram.out_refresh_screen){
+    if ((|controller_left_edge.out) | (|controller_right_edge.out) | start_button_edge.out | middle_button_edge.out | ram.out_refresh_screen){
        update_ram_flag.d = 1;
     }
     
