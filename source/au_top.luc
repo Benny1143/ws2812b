@@ -8,6 +8,7 @@ module au_top (
     output io_led [3][8],   // LEDs on IO Shield
     output io_seg [8],      // 7-segment LEDs on IO Shield
     output io_sel [4],      // Digit select on IO Shield
+    input rst_external,
     input io_button [5],    // 5 buttons on IO Shield
     input controller_right[4],
     input controller_left[4]
@@ -73,7 +74,7 @@ module au_top (
   }
   
   always {
-    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    reset_cond.in = (~rst_n) | (~rst_external); // input raw inverted reset signal
     rst = reset_cond.out;   // conditioned reset
     
     usb_tx = usb_rx;        // loop serial port
