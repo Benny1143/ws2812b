@@ -1,0 +1,33 @@
+module shifter (
+    input a[32],
+    input b[5],
+    input alufn_signal[6],
+    output shift[32]
+  ) {
+
+  shl shl(.a(a), .b(b));
+  shr shr(.a(a), .b(b));
+  sra sra(.a(a[15:0]), .b(b));
+  
+  
+  
+  always {
+    // default values to silence errors 
+    
+    case(alufn_signal[1:0]){
+      b00:
+        shift = shl.shift; // 32-bit output
+        
+      b01:
+        shift = shr.shift; // 32-bit output
+      
+      b11:
+        shift = c{16b0, sra.shift}; // 16-bit output
+        
+      default:
+        shift = 32b0;
+    }
+    
+  }
+}
+

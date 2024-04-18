@@ -1,22 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="WS2812B" board="Alchitry Au" language="Lucid" version="3">
   <files>
-    <component>simple_dual_ram.v</component>
+    <src>decimal_counter.luc</src>
+    <src>multi_dec_ctr.luc</src>
     <component>pipeline.luc</component>
     <src>seven_seg.luc</src>
+    <src>beta_cpu.luc</src>
     <component>counter.luc</component>
+    <src>arithmetic.luc</src>
+    <src>rca.luc</src>
+    <src>shr.luc</src>
     <src>data_rom.luc</src>
-    <component>decoder.luc</component>
-    <src>ws2812b_writer.luc</src>
-    <src>digit_to_seven_seg.luc</src>
-    <src>reverser.luc</src>
+    <src>regfile_memory.luc</src>
+    <src>adder.luc</src>
+    <src>source</src>
     <src>data_ram.luc</src>
+    <src>SHL.luc</src>
     <component>reset_conditioner.luc</component>
     <src>multi_seven_seg.luc</src>
-    <component>edge_detector.luc</component>
-    <src top="true">au_top.luc</src>
+    <src>pc_unit.luc</src>
     <component>button_conditioner.luc</component>
+    <src>mux_4.luc</src>
+    <src>instruction_rom.luc</src>
+    <component>simple_dual_ram.v</component>
+    <src>cadd.luc</src>
+    <src>alu_to_text.luc</src>
+    <src>shifter.luc</src>
+    <component>decoder.luc</component>
+    <src>alu.luc</src>
+    <src>boolean.luc</src>
+    <src>ws2812b_writer.luc</src>
+    <src>digit_to_seven_seg.luc</src>
+    <src>compare.luc</src>
+    <src>fa.luc</src>
+    <src>sra.luc</src>
+    <src>regfile_unit.luc</src>
+    <src>reverser.luc</src>
+    <component>edge_detector.luc</component>
+    <src>multiplier.luc</src>
+    <src top="true">au_top.luc</src>
     <src>multi_seven_seg_translate.luc</src>
+    <src>control_unit.luc</src>
     <constraint lib="true">au.xdc</constraint>
     <constraint>custom.acf</constraint>
   </files>

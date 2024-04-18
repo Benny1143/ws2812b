@@ -1,0 +1,39 @@
+module alu_to_text (
+    input alufn[8],  // clock
+    output char[4][8]
+  ) {
+  always {
+    case(alufn){
+      6b000000:
+        char = " ADD";
+      6b000001:
+        char = " SUB";
+      6b000010:
+        char = "N7UL"; //N7 is M
+      6b011000:
+        char = " AND";
+      6b011110:
+        char = "  OR";
+      6b010110:
+        char = "O OR";
+      6b011010:
+        char = "ALDR";
+      6b100000:
+        char = " SHL";
+      6b100001:
+        char = " SHR";
+      6b100011:
+        char = " SRA";
+      6b110011:
+        char = "CPEQ";
+      6b110101:
+        char = "CPLT";
+      6b110111:
+        char = "CPLE";
+      6b001000:
+        char = "CADD";
+      default:
+        char = "    ";
+    }
+  }
+}

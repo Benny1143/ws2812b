@@ -59,6 +59,9 @@ module au_top (
   button_conditioner controller_right_button[4](.clk(clk));
   edge_detector controller_left_edge[4](.clk(clk), #RISE(1), #FALL(0));
   edge_detector controller_right_edge[4](.clk(clk), #RISE(1), #FALL(0));
+  //Roshan add here
+  alu alu_system;
+
 
   button_conditioner start_button(.clk(clk));
   edge_detector start_button_edge(.clk(clk), #RISE(1), #FALL(0));
@@ -115,7 +118,13 @@ module au_top (
     ram.player2_x_pos = player2_x_pos.q; 
     ram.player2_y_pos = player2_y_pos.q;
 
-    if(user_killed.q != b01) {
+    //Roshan added here
+    alu_system.alufn_signal = b110011;
+    alu_system.a = user_killed.q;
+    alu_system.b = b01;
+
+    // if(user_killed.q != b01) {
+    if(alu_system.out == b00) {
       if(controller_left_edge.out[0]) { // up
         if (!(((player1_y_pos.q - 1) == player2_y_pos.q) && (player1_x_pos.q == player2_x_pos.q))){
           player1_y_pos.d = player1_y_pos.q - 1;

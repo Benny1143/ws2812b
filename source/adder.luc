@@ -1,0 +1,22 @@
+module adder #(SIZE = 16: SIZE > 0)(
+    input a[SIZE],
+    input b[SIZE],
+    input alufn_signal[6],
+    output out[SIZE],
+    output z,
+    output v,
+    output n
+  ) {
+  rca rca;
+  sig b_xor_alufn[SIZE];
+  always {  
+    rca.a = a;
+    b_xor_alufn = b ^ SIZEx{alufn_signal[0]};
+    rca.b = b_xor_alufn;  
+    rca.ci = alufn_signal[0];
+    out = rca.s;
+    z = !rca.s;
+    v = (a[SIZE-1] & b_xor_alufn[SIZE-1] & !rca.s[SIZE-1]) | (~a[SIZE-1] & ~b_xor_alufn[SIZE-1] & rca.s[SIZE-1]);
+    n = rca.s[SIZE-1];
+  }
+}

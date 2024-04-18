@@ -1,0 +1,23 @@
+module instruction_rom #(
+    WORDS = 16 // total instructions in this ROM
+)(
+    input addr[$clog2(WORDS)], // this ROM is WORD addressable
+    output out[32]
+  ) {
+  
+   // Driver code, BR(reset) is the first instruction
+  const INSTRUCTIONS = {
+    32h77FFFFF8, // 0x01C BEQ(R31, main, R31) 
+    32h607F0020, // 0x016 LD(R31, 32, R3)
+    32h643F0020, // 0x012 ST(R1, 32, R31) // Store Mem[32] <- Reg[Rc] // ALU display 32
+    32h90410800, // 0x010 CMPEQ(R1, R1, R2) // Type 1 // ALU display 1 (true)
+    32hC09F0003, // 0x00C ADDC(R31, 3, R4) // ALU display 3
+    32h00210002, // 0x008 CADD(R1, b10, R1) - Down
+    32h00210002, // 0x004 CADD(R1, b10, R1) - Down
+    32h00210002 // 0x000 CADD(R1, b10, R1) - Down // Type 2 -- Main
+  };
+
+  always {
+    out = INSTRUCTIONS[addr];
+  }
+}

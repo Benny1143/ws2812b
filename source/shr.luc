@@ -1,0 +1,84 @@
+module shr (
+    input a[32],
+    input b[5],
+    output shift[32]
+  ) {
+
+  sig w[32];
+  sig x[32];
+  sig y[32];
+  sig z[32];
+  sig aorr[16]; // the array of values to choose for padding
+ 
+always {
+      aorr = 16b0;  
+
+ 
+    
+    
+    case(b[4]){ // shift 16 bit
+      b0:
+        w = a;
+
+      b1:
+        w[31:16] = aorr[15:0];
+        w[15:0] = a[31:16];
+
+      default:
+        w = a;
+
+    }
+
+    case(b[3]){ // shift 8 bit
+      b0:
+        x = w;
+
+      b1:
+        x[31:24] = aorr[7:0];
+        x[23:0] = w[31:8];
+
+      default:
+        x = w;
+
+    }
+
+    case(b[2]){ // shift 4 bit
+      b0:
+        y = x;
+
+      b1:
+        y[31:28] = aorr[3:0];
+        y[27:0] = x[31:4];
+
+      default:
+        y = x;
+
+    }
+    
+    case(b[1]){ //shift 2 bit
+      b0:
+        z = y;
+
+      b1:
+        z[31:30] = aorr[1:0];
+        z[29:0] = y[31:2];
+
+      default:
+        z = y;
+
+    }
+
+    case(b[0]){ //shift 1 bit
+      b0:
+        shift = z;
+
+      b1:
+        shift[31] = aorr[0];
+        shift[30:0] = z[31:1];
+
+      default:
+        shift = z;
+
+    }
+  }
+}

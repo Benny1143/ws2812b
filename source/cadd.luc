@@ -1,0 +1,41 @@
+module cadd #(SIZE = 3: SIZE > 0) (
+    input coordinate[SIZE*2],
+    input direction[2],
+    output out[SIZE*2]
+  ) {
+  adder adder;
+  sig x[SIZE];
+  sig y[SIZE];
+
+  always {
+    y = coordinate[SIZE-1:0];
+    x = coordinate[SIZE*2-1:SIZE];
+    case(direction){
+      b00: // Right, X+1
+        adder.alufn_signal = 000000;
+        adder.a = x;
+        adder.b = 1;
+        out = c{adder.out[2:0],y};
+      b01: // Left, X-1
+        adder.alufn_signal = 000001;
+        adder.a = x;
+        adder.b = 1;
+        out = c{adder.out[2:0],y};
+      b10: // Down, Y-1
+        adder.alufn_signal = 000001;
+        adder.a = y;
+        adder.b = 1;
+        out = c{x,adder.out[2:0]};
+      b11: // Up, Y+1
+        adder.alufn_signal = 000000;
+        adder.a = y;
+        adder.b = 1;
+        out = c{x,adder.out[2:0]};
+      default:
+        out = 0;
+        adder.alufn_signal = 0;
+        adder.a = 0;
+        adder.b = 0;
+    }
+  }
+}

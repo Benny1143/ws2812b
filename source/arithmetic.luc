@@ -1,0 +1,45 @@
+module arithmetic (
+    input a[32],
+    input b[32],
+    input alufn_signal[6],
+    output arith[32],
+    output z,
+    output v,
+    output n,
+    output cmp
+  ) {
+  adder adder(.alufn_signal(alufn_signal));
+  multiplier multiplier(.a(a), .b(b));
+  compare compare(
+    .z(adder.z),
+    .v(adder.v),
+    .n(adder.n),
+    .alufn_signal(alufn_signal));
+  cadd cadd;
+
+  
+  always {
+    adder.a = a[15:0];
+    adder.b = b[15:0];
+    
+    cadd.coordinate = a[5:0];
+    cadd.direction = b[1:0];
+      
+    case(alufn_signal[1:0]){
+      b00: //Add
+        if(alufn_signal[3:2] == 2b10) arith = cadd.out;
+        else arith = adder.out;
+      b01: //Subtract
+        arith = adder.out;
+      b10: //Multiple 
+        arith = multiplier.mul;
+      default:
+        arith = 0;
+    }
+
+    z = adder.z;
+    v = adder.v;
+    n = adder.n;
+    cmp = compare.cmp;
+  }
+}
